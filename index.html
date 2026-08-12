@@ -130,8 +130,10 @@
     vertical-align:middle;margin-right:6px;
   }
   @keyframes sp{to{transform:rotate(360deg);}}
-  .who.connected{font-size:0.78rem;font-weight:700;color:var(--moss);letter-spacing:0.02em;}
-  .who.disconnected{font-size:0.78rem;font-weight:700;color:var(--danger);letter-spacing:0.02em;}
+  .who.connected{font-size:1.05rem;font-weight:700;color:var(--moss);letter-spacing:0.02em;}
+  .who.disconnected{font-size:1.05rem;font-weight:700;color:var(--danger);letter-spacing:0.02em;animation:blink 1s step-start infinite;}
+  @keyframes blink{50%{opacity:0.25;}}
+  .authbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .setupnote{
     font-size:0.75rem;
     color:var(--rust);
@@ -165,10 +167,26 @@
     text-transform:none;
     letter-spacing:0;
   }
+  details#sendersBox{
+    border:1px solid var(--line);
+    background:var(--paper);
+  }
+  details#sendersBox summary{
+    padding:10px 12px;
+    font-size:0.8rem;
+    color:var(--ink);
+    cursor:pointer;
+    list-style:none;
+  }
+  details#sendersBox summary::-webkit-details-marker{display:none;}
+  details#sendersBox summary::before{content:'▸ ';color:var(--muted);}
+  details#sendersBox[open] summary::before{content:'▾ ';}
+  details#sendersBox summary .muted{color:var(--muted);}
   textarea#senders{
     width:100%;
     padding:10px 12px;
-    border:1px solid var(--line);
+    border:none;
+    border-top:1px dashed var(--line);
     background:var(--paper);
     font-family:inherit;
     font-size:0.85rem;
@@ -197,18 +215,27 @@
   </div>
 
   <div class="panel">
-    <div class="inline-row">
-      <select id="accountsSelect"><option>Sin cuentas conectadas</option></select>
-      <button type="button" id="removeAccountBtn" class="secondary">Quitar</button>
-      <button id="authBtn">Añadir cuenta</button>
+    <div class="authbar">
+      <span class="who disconnected" id="whoami">Conectar</span>
+      <button id="authBtn">Conectar con Google</button>
     </div>
-    <div class="status" id="whoami"></div>
+    <div class="inline-row" id="accountSwitchRow" style="display:none;">
+      <select id="accountsSelect"></select>
+      <button type="button" id="removeAccountBtn" class="secondary">Quitar</button>
+    </div>
   </div>
 
   <div class="panel">
     <div class="field">
-      <label for="senders">Remitentes a buscar</label>
-      <textarea id="senders" rows="2">temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com</textarea>
+      <label for="senderInput">Remitentes a buscar</label>
+      <div class="inline-row">
+        <input type="text" id="senderInput" placeholder="ej: temu.com">
+        <button type="button" id="addSenderBtn" class="secondary">Añadir</button>
+      </div>
+      <details id="sendersBox" style="margin-top:8px;">
+        <summary id="sendersSummary">0 remitentes guardados <span class="muted">· ver / editar</span></summary>
+        <textarea id="senders" rows="3">temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com</textarea>
+      </details>
     </div>
 
     <div class="inline-row">
@@ -271,8 +298,12 @@ let currentOtherThreads = [];
 const authBtn = document.getElementById('authBtn');
 const removeAccountBtn = document.getElementById('removeAccountBtn');
 const accountsSelect = document.getElementById('accountsSelect');
+const accountSwitchRow = document.getElementById('accountSwitchRow');
 const whoami = document.getElementById('whoami');
 const setupNote = document.getElementById('setupNote');
+const senderInput = document.getElementById('senderInput');
+const addSenderBtn = document.getElementById('addSenderBtn');
+const sendersSummary = document.getElementById('sendersSummary');
 const searchBtn = document.getElementById('searchBtn');
 const searchStatus = document.getElementById('searchStatus');
 const resultsPanel = document.getElementById('resultsPanel');
@@ -303,34 +334,38 @@ window.addEventListener('load', () => {
     scope: SCOPES,
     callback: async (resp) => {
       if(resp.error){
-        whoami.textContent = 'Error de autenticación: ' + resp.error;
-        whoami.classList.add('err');
+        whoami.textContent = 'Conectar';
+        whoami.classList.remove('connected');
+        whoami.classList.add('disconnected');
         return;
       }
+      let email = `cuenta-${accounts.length + 1}`;
       try{
         // Usamos el propio perfil de Gmail para saber el email de la cuenta;
         // esto ya está cubierto por el scope gmail.modify, sin pedir permisos nuevos.
         const profile = await gmailFetch(resp.access_token, '/profile');
-        const email = (profile && profile.emailAddress) || `cuenta-${accounts.length + 1}`;
-        const existing = accounts.find(a => a.email === email);
-        if(existing){
-          existing.token = resp.access_token;
-        }else{
-          accounts.push({ token: resp.access_token, email });
-        }
-        renderAccounts();
+        if(profile && profile.emailAddress) email = profile.emailAddress;
       }catch(e){
         console.error('No se pudo identificar la cuenta', e);
-        accounts.push({ token: resp.access_token, email: `cuenta-${accounts.length + 1}` });
-        renderAccounts();
       }
+      const existing = accounts.find(a => a.email === email);
+      if(existing){
+        existing.token = resp.access_token;
+      }else{
+        accounts.push({ token: resp.access_token, email });
+      }
+      whoami.textContent = 'Conectado';
+      whoami.classList.remove('disconnected');
+      whoami.classList.add('connected');
+      authBtn.textContent = 'Reconectar';
+      renderAccounts();
     }
   });
 });
 
 authBtn.addEventListener('click', () => {
   if(!tokenClient) return;
-  tokenClient.requestAccessToken({ prompt: 'select_account' });
+  tokenClient.requestAccessToken({ prompt: 'consent' });
 });
 
 removeAccountBtn.addEventListener('click', () => {
@@ -342,20 +377,16 @@ removeAccountBtn.addEventListener('click', () => {
 
 function renderAccounts(){
   accountsSelect.innerHTML = '';
-  if(!accounts.length){
+  accounts.forEach(acc => {
     const opt = document.createElement('option');
-    opt.textContent = 'Sin cuentas conectadas';
+    opt.textContent = acc.email;
     accountsSelect.appendChild(opt);
-    whoami.textContent = '';
+  });
+  accountSwitchRow.style.display = accounts.length >= 1 ? 'flex' : 'none';
+  if(!accounts.length){
+    whoami.textContent = 'Conectar';
     whoami.classList.remove('connected');
-  }else{
-    accounts.forEach(acc => {
-      const opt = document.createElement('option');
-      opt.textContent = acc.email;
-      accountsSelect.appendChild(opt);
-    });
-    whoami.textContent = `${accounts.length} cuenta(s) conectada(s) · se busca en todas`;
-    whoami.classList.add('connected');
+    whoami.classList.add('disconnected');
   }
   searchBtn.disabled = !accounts.length;
   othersBtn.disabled = !accounts.length;
@@ -365,6 +396,28 @@ function getSenderList(){
   return document.getElementById('senders').value
     .split(',').map(s => s.trim()).filter(Boolean);
 }
+
+function updateSendersSummary(){
+  const n = getSenderList().length;
+  sendersSummary.innerHTML = `${n} remitente(s) guardado(s) <span class="muted">· ver / editar</span>`;
+}
+
+function addSenderFromInput(){
+  const raw = senderInput.value.trim();
+  if(!raw) return;
+  const list = getSenderList();
+  raw.split(',').map(s => s.trim()).filter(Boolean).forEach(s => {
+    if(!list.includes(s)) list.push(s);
+  });
+  document.getElementById('senders').value = list.join(', ');
+  senderInput.value = '';
+  updateSendersSummary();
+}
+addSenderBtn.addEventListener('click', addSenderFromInput);
+senderInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); addSenderFromInput(); }
+});
+document.getElementById('senders').addEventListener('input', updateSendersSummary);
 
 function toGmailDate(str){
   const m = str.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -653,6 +706,7 @@ othersDeleteBtn.addEventListener('click', doDeleteOthers);
 
 renderAccounts();
 updateOthersReadonly();
+updateSendersSummary();
 </script>
 </body>
 </html>
