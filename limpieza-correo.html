@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Limpieza de correo</title>
+<style>
+  :root{
+    --ink:#1b1f1d;
+    --paper:#f6f5f0;
+    --panel:#ffffff;
+    --line:#dedad0;
+    --moss:#3f5d4c;
+    --moss-dark:#2c4436;
+    --rust:#b5502f;
+    --muted:#7a7568;
+    --danger:#a3312a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Courier New', ui-monospace, SFMono-Regular, monospace;
+    min-height:100vh;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:28px 18px 60px;}
+  header{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+  }
+  header h1{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-size:1.5rem;
+    letter-spacing:0.02em;
+    margin:0;
+  }
+  header .tag{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;}
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:18px;
+    margin-bottom:18px;
+  }
+  label{display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px;}
+  input[type=text]{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    font-family:inherit;
+    font-size:0.9rem;
+    color:var(--ink);
+  }
+  input[type=text]:focus{outline:2px solid var(--moss);outline-offset:1px;}
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .row{display:flex;gap:12px;}
+  .row .field{flex:1;}
+  button{
+    font-family:inherit;
+    font-size:0.85rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:11px 18px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+  }
+  button:hover{background:var(--moss-dark);border-color:var(--moss-dark);}
+  button:disabled{opacity:0.45;cursor:default;}
+  button.secondary{background:transparent;color:var(--ink);}
+  button.secondary:hover{background:var(--ink);color:var(--paper);}
+  button.danger{background:var(--danger);border-color:var(--danger);}
+  button.danger:hover{background:#7d221d;border-color:#7d221d;}
+  .actions{display:flex;gap:10px;margin-top:16px;}
+  .status{
+    font-size:0.8rem;
+    color:var(--muted);
+    margin-top:10px;
+    min-height:1.2em;
+  }
+  .status.err{color:var(--danger);}
+  ul.results{list-style:none;margin:0;padding:0;}
+  ul.results li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  ul.results li:last-child{border-bottom:none;}
+  ul.results input[type=checkbox]{
+    margin-top:3px;
+    width:16px;height:16px;
+    accent-color:var(--moss);
+    flex-shrink:0;
+  }
+  .meta{flex:1;min-width:0;}
+  .meta .subj{font-size:0.88rem;color:var(--ink);}
+  .meta .sub{font-size:0.75rem;color:var(--muted);margin-top:3px;}
+  .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:24px 0;}
+  .count{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+  .divider{border:none;border-top:1px dashed var(--line);margin:16px 0;}
+  .spin{
+    display:inline-block;width:12px;height:12px;
+    border:2px solid var(--line);border-top-color:var(--moss);
+    border-radius:50%;
+    animation:sp 0.7s linear infinite;
+    vertical-align:middle;margin-right:6px;
+  }
+  @keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Limpieza de correo</h1>
+    <span class="tag">Gmail</span>
+  </header>
+
+  <div class="panel">
+    <div class="field">
+      <label for="senders">Remitentes a buscar</label>
+      <input type="text" id="senders" value="temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="afterDate">Borrar a partir de (dd/mm/aaaa)</label>
+        <input type="text" id="afterDate" placeholder="ej. 01/07/2026">
+      </div>
+    </div>
+    <div class="actions">
+      <button id="searchBtn">Buscar</button>
+    </div>
+    <div class="status" id="searchStatus"></div>
+  </div>
+
+  <div class="panel" id="resultsPanel" style="display:none;">
+    <div class="count" id="resultCount"></div>
+    <hr class="divider">
+    <ul class="results" id="resultsList"></ul>
+    <div class="actions">
+      <button class="secondary" id="selectAllBtn">Marcar todos</button>
+      <button class="danger" id="deleteBtn">Borrar seleccionados</button>
+    </div>
+    <div class="status" id="deleteStatus"></div>
+  </div>
+</div>
+
+<script>
+const MODEL = "claude-sonnet-4-6";
+const GMAIL_MCP = { type: "url", url: "https://gmailmcp.googleapis.com/mcp/v1", name: "gmail-mcp" };
+
+const searchBtn = document.getElementById('searchBtn');
+const searchStatus = document.getElementById('searchStatus');
+const resultsPanel = document.getElementById('resultsPanel');
+const resultsList = document.getElementById('resultsList');
+const resultCount = document.getElementById('resultCount');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const deleteStatus = document.getElementById('deleteStatus');
+
+let currentThreads = [];
+
+function toGmailDate(str){
+  // dd/mm/aaaa -> yyyy/mm/dd
+  const m = str.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m) return null;
+  const [, d, mo, y] = m;
+  return `${y}/${mo.padStart(2,'0')}/${d.padStart(2,'0')}`;
+}
+
+function buildQuery(){
+  const sendersRaw = document.getElementById('senders').value.trim();
+  const afterRaw = document.getElementById('afterDate').value.trim();
+  const senders = sendersRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  let q = '';
+  if(senders.length){
+    q = '{' + senders.map(s=>`from:${s}`).join(' OR ') + '}';
+  }
+  if(afterRaw){
+    const gd = toGmailDate(afterRaw);
+    if(gd) q += (q ? ' ' : '') + `after:${gd}`;
+  }
+  return q;
+}
+
+async function callClaude(userText, system){
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 1000,
+      system: system || undefined,
+      messages: [{ role: "user", content: userText }],
+      mcp_servers: [GMAIL_MCP]
+    })
+  });
+  if(!res.ok){
+    throw new Error(`API error ${res.status}`);
+  }
+  return res.json();
+}
+
+function extractToolResults(data){
+  if(!data || !data.content) return [];
+  return data.content.filter(b => b.type === "mcp_tool_result");
+}
+
+function parseThreadsFromResults(blocks){
+  let threads = [];
+  for(const b of blocks){
+    const text = b?.content?.[0]?.text;
+    if(!text) continue;
+    try{
+      const parsed = JSON.parse(text);
+      if(Array.isArray(parsed.threads)) threads = threads.concat(parsed.threads);
+    }catch(e){ /* not JSON, skip */ }
+  }
+  return threads;
+}
+
+async function doSearch(){
+  const query = buildQuery();
+  if(!query){
+    searchStatus.textContent = 'Escribe al menos un remitente.';
+    searchStatus.classList.add('err');
+    return;
+  }
+  searchStatus.classList.remove('err');
+  searchStatus.innerHTML = '<span class="spin"></span>Buscando…';
+  searchBtn.disabled = true;
+  resultsPanel.style.display = 'none';
+
+  try{
+    const prompt = `Usa la herramienta Gmail search_threads con el parámetro query="${query.replace(/"/g,'\\"')}" y pageSize=50. Después de obtener el resultado, responde solo con la palabra OK.`;
+    const data = await callClaude(prompt);
+    const blocks = extractToolResults(data);
+    const threads = parseThreadsFromResults(blocks);
+    currentThreads = threads;
+    renderResults(threads);
+    searchStatus.textContent = threads.length
+      ? `${threads.length} correo(s) encontrado(s).`
+      : 'Sin resultados.';
+  }catch(err){
+    console.error(err);
+    searchStatus.textContent = 'Error al buscar. Inténtalo de nuevo.';
+    searchStatus.classList.add('err');
+  }finally{
+    searchBtn.disabled = false;
+  }
+}
+
+function renderResults(threads){
+  resultsList.innerHTML = '';
+  if(!threads.length){
+    resultsPanel.style.display = 'block';
+    resultCount.textContent = '0 resultados';
+    resultsList.innerHTML = '<div class="empty">No se encontraron correos con esos criterios.</div>';
+    return;
+  }
+  resultCount.textContent = `${threads.length} resultado(s)`;
+  threads.forEach((t, i) => {
+    const msg = (t.messages && t.messages[0]) || {};
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <input type="checkbox" checked data-idx="${i}">
+      <div class="meta">
+        <div class="subj">${(msg.subject || '(sin asunto)').replace(/</g,'&lt;')}</div>
+        <div class="sub">${(msg.sender||'').replace(/</g,'&lt;')} · ${msg.date ? new Date(msg.date).toLocaleDateString('es-ES') : ''}</div>
+      </div>
+    `;
+    resultsList.appendChild(li);
+  });
+  resultsPanel.style.display = 'block';
+}
+
+async function trashThread(threadId){
+  const prompt = `Usa la herramienta Gmail trash_thread con threadId="${threadId}". Después responde solo con la palabra OK.`;
+  await callClaude(prompt);
+}
+
+async function doDelete(){
+  const checked = Array.from(resultsList.querySelectorAll('input[type=checkbox]:checked'));
+  if(!checked.length){
+    deleteStatus.textContent = 'No hay correos seleccionados.';
+    deleteStatus.classList.add('err');
+    return;
+  }
+  deleteStatus.classList.remove('err');
+  deleteBtn.disabled = true;
+  let done = 0;
+  deleteStatus.innerHTML = `<span class="spin"></span>Borrando 0/${checked.length}…`;
+
+  for(const cb of checked){
+    const idx = parseInt(cb.dataset.idx, 10);
+    const thread = currentThreads[idx];
+    try{
+      await trashThread(thread.id);
+      done++;
+      deleteStatus.innerHTML = `<span class="spin"></span>Borrando ${done}/${checked.length}…`;
+      cb.closest('li').style.opacity = '0.4';
+    }catch(err){
+      console.error('Error borrando', thread.id, err);
+    }
+  }
+
+  deleteStatus.textContent = `${done} de ${checked.length} correo(s) borrado(s).`;
+  deleteBtn.disabled = false;
+  setTimeout(() => doSearch(), 900);
+}
+
+searchBtn.addEventListener('click', doSearch);
+selectAllBtn.addEventListener('click', () => {
+  const boxes = resultsList.querySelectorAll('input[type=checkbox]');
+  const allChecked = Array.from(boxes).every(b => b.checked);
+  boxes.forEach(b => b.checked = !allChecked);
+});
+deleteBtn.addEventListener('click', doDelete);
+</script>
+</body>
+</html>
