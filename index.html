@@ -4,280 +4,493 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Limpieza de correo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1b1f1d;
-    --paper:#f6f5f0;
-    --panel:#ffffff;
-    --line:#dedad0;
-    --moss:#3f5d4c;
-    --moss-dark:#2c4436;
-    --rust:#b5502f;
-    --muted:#7a7568;
-    --danger:#a3312a;
+    --bg:#f0f2f5;
+    --surface:#ffffff;
+    --surface-alt:#f8f9fb;
+    --ink:#1a1d23;
+    --ink-secondary:#5f6672;
+    --ink-muted:#9aa1ad;
+    --primary:#4f46e5;
+    --primary-hover:#4338ca;
+    --primary-light:#eef2ff;
+    --primary-glow:rgba(79,70,229,0.15);
+    --accent:#f59e0b;
+    --accent-light:#fef3c7;
+    --danger:#ef4444;
+    --danger-hover:#dc2626;
+    --danger-light:#fef2f2;
+    --success:#10b981;
+    --success-light:#ecfdf5;
+    --border:#e5e7eb;
+    --border-focus:#4f46e5;
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,0.06);
+    --shadow-lg:0 8px 30px rgba(0,0,0,0.08);
+    --shadow-xl:0 20px 60px rgba(0,0,0,0.1);
+    --radius:12px;
+    --radius-sm:8px;
+    --radius-xs:6px;
+    --transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box;margin:0;padding:0;}
   body{
-    margin:0;
-    background:var(--paper);
+    background:var(--bg);
     color:var(--ink);
-    font-family:'Courier New', ui-monospace, SFMono-Regular, monospace;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
     min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:640px;margin:0 auto;padding:28px 18px 60px;}
+  .wrap{max-width:600px;margin:0 auto;padding:24px 16px 40px;}
+
+  /* Header */
   header{
-    border-bottom:2px solid var(--ink);
-    padding-bottom:14px;
-    margin-bottom:22px;
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
+    text-align:center;
+    margin-bottom:28px;
+    padding:20px 0;
   }
   header h1{
-    font-family:Georgia, 'Times New Roman', serif;
-    font-size:1.5rem;
-    letter-spacing:0.02em;
-    margin:0;
+    font-size:1.75rem;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    background:linear-gradient(135deg,var(--ink) 0%,var(--primary) 100%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:4px;
   }
-  header .tag{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;}
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--line);
-    padding:18px;
-    margin-bottom:18px;
+  header .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-size:0.7rem;
+    font-weight:600;
+    color:var(--primary);
+    background:var(--primary-light);
+    padding:3px 10px;
+    border-radius:20px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
   }
-  label{display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px;}
-  input[type=text]{
-    padding:10px 12px;
-    border:1px solid var(--line);
-    background:var(--paper);
-    font-family:inherit;
-    font-size:0.9rem;
-    color:var(--ink);
+
+  /* Cards */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow-sm);
+    transition:var(--transition);
   }
-  input[type=date]{
-    padding:10px 8px;
-    border:1px solid var(--line);
-    background:var(--paper);
-    font-family:inherit;
-    font-size:0.82rem;
-    color:var(--ink);
+  .card:hover{box-shadow:var(--shadow-md);}
+  .card-title{
+    font-size:0.68rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-muted);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:6px;
   }
-  select{
-    padding:10px 12px;
-    border:1px solid var(--line);
-    background:var(--paper);
-    font-family:inherit;
-    font-size:0.82rem;
-    color:var(--ink);
-    max-width:100%;
+  .card-title::before{
+    content:'';
+    width:3px;
+    height:12px;
+    background:var(--primary);
+    border-radius:2px;
   }
-  input[type=text]:focus, input[type=date]:focus, select:focus{outline:2px solid var(--moss);outline-offset:1px;}
-  .field{margin-bottom:14px;}
-  .field:last-child{margin-bottom:0;}
+
+  /* Auth section */
+  .authbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .who{
+    font-size:1.4rem;
+    font-weight:700;
+    letter-spacing:-0.02em;
+  }
+  .who.connected{color:var(--success);}
+  .who.disconnected{color:var(--ink-muted);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+
+  /* Buttons */
   button{
     font-family:inherit;
-    font-size:0.85rem;
-    letter-spacing:0.04em;
-    text-transform:uppercase;
-    padding:11px 18px;
-    border:1px solid var(--ink);
-    background:var(--ink);
-    color:var(--paper);
+    font-size:0.82rem;
+    font-weight:600;
+    letter-spacing:0.01em;
+    padding:10px 18px;
+    border:none;
+    border-radius:var(--radius-sm);
     cursor:pointer;
+    transition:var(--transition);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
     flex-shrink:0;
   }
-  button:hover{background:var(--moss-dark);border-color:var(--moss-dark);}
-  button:disabled{opacity:0.45;cursor:default;}
-  button.secondary{background:transparent;color:var(--ink);}
-  button.secondary:hover{background:var(--ink);color:var(--paper);}
-  button.danger{background:var(--danger);border-color:var(--danger);}
-  button.danger:hover{background:#7d221d;border-color:#7d221d;}
-  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
-  .status{
-    font-size:0.8rem;
-    color:var(--muted);
-    margin-top:10px;
-    min-height:1.2em;
+  button:active{transform:scale(0.97);}
+  button:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .btn-primary{
+    background:var(--primary);
+    color:#fff;
+    box-shadow:0 2px 8px var(--primary-glow);
   }
-  .status.err{color:var(--danger);}
-  ul.results{list-style:none;margin:0;padding:0;}
-  ul.results li{
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    padding:12px 0;
-    border-bottom:1px solid var(--line);
+  .btn-primary:hover:not(:disabled){background:var(--primary-hover);box-shadow:0 4px 16px var(--primary-glow);}
+  .btn-secondary{
+    background:var(--surface-alt);
+    color:var(--ink);
+    border:1px solid var(--border);
   }
-  ul.results li:last-child{border-bottom:none;}
-  ul.results input[type=checkbox]{
-    margin-top:3px;
-    width:16px;height:16px;
-    accent-color:var(--moss);
-    flex-shrink:0;
+  .btn-secondary:hover:not(:disabled){background:var(--border);border-color:var(--ink-muted);}
+  .btn-danger{
+    background:var(--danger);
+    color:#fff;
+    box-shadow:0 2px 8px rgba(239,68,68,0.2);
   }
-  .meta{flex:1;min-width:0;}
-  .meta .subj{font-size:0.88rem;color:var(--ink);}
-  .meta .sub{font-size:0.75rem;color:var(--muted);margin-top:3px;}
-  .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:24px 0;}
-  .count{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
-  .divider{border:none;border-top:1px dashed var(--line);margin:14px 0;}
-  .spin{
-    display:inline-block;width:12px;height:12px;
-    border:2px solid var(--line);border-top-color:var(--moss);
-    border-radius:50%;
-    animation:sp 0.7s linear infinite;
-    vertical-align:middle;margin-right:6px;
+  .btn-danger:hover:not(:disabled){background:var(--danger-hover);box-shadow:0 4px 16px rgba(239,68,68,0.25);}
+  .btn-sm{padding:6px 12px;font-size:0.72rem;border-radius:var(--radius-xs);}
+  .btn-icon{padding:8px 10px;}
+
+  /* Inputs */
+  input[type=text],input[type=date],select,textarea{
+    font-family:inherit;
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--surface-alt);
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);
+    padding:10px 14px;
+    transition:var(--transition);
+    width:100%;
   }
-  @keyframes sp{to{transform:rotate(360deg);}}
-  .who.connected{font-size:1.05rem;font-weight:700;color:var(--moss);letter-spacing:0.02em;}
-  .who.disconnected{font-size:1.05rem;font-weight:700;color:var(--danger);letter-spacing:0.02em;animation:blink 1s step-start infinite;}
-  @keyframes blink{50%{opacity:0.25;}}
-  .authbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .setupnote{
-    font-size:0.75rem;
-    color:var(--rust);
-    border:1px dashed var(--rust);
-    padding:10px 12px;
-    margin-bottom:18px;
-    display:none;
+  input:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:var(--border-focus);
+    box-shadow:0 0 0 3px var(--primary-glow);
+    background:var(--surface);
   }
-  /* --- filas compactas: label + control + botón en una sola línea --- */
-  .inline-row{
+  input::placeholder{color:var(--ink-muted);}
+  input[type=date]{width:auto;padding:9px 12px;}
+  select{cursor:pointer;}
+  textarea{
+    resize:vertical;
+    line-height:1.6;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.78rem;
+  }
+
+  /* Inline rows */
+  .row{
     display:flex;
     align-items:center;
     gap:8px;
     flex-wrap:wrap;
   }
-  .inline-row + .inline-row{margin-top:10px;}
-  .inline-row .inline-label{
-    margin:0;
+  .row + .row{margin-top:10px;}
+  .row-label{
     font-size:0.72rem;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    color:var(--muted);
+    font-weight:500;
+    color:var(--ink-secondary);
     flex-shrink:0;
+    min-width:20px;
+    text-align:center;
   }
-  .inline-row input[type=date]{width:118px;flex:0 0 auto;padding:10px 6px;}
-  .inline-row select{width:auto;flex:1 1 130px;min-width:0;}
-  .inline-row .icon-label{
-    margin:0;
-    font-size:1.1rem;
-    flex-shrink:0;
-    text-transform:none;
-    letter-spacing:0;
+
+  /* Senders area */
+  .senders-details{
+    width:100%;
+    margin-top:8px;
   }
-  details#sendersBox{
-    border:1px solid var(--line);
-    background:var(--paper);
-  }
-  details#sendersBox summary{
-    padding:10px 12px;
-    font-size:0.8rem;
-    color:var(--ink);
+  .senders-details summary{
+    font-size:0.72rem;
+    font-weight:500;
+    color:var(--primary);
     cursor:pointer;
     list-style:none;
+    padding:6px 0;
+    display:flex;
+    align-items:center;
+    gap:4px;
+    transition:var(--transition);
   }
-  details#sendersBox summary::-webkit-details-marker{display:none;}
-  details#sendersBox summary::before{content:'▸ ';color:var(--muted);}
-  details#sendersBox[open] summary::before{content:'▾ ';}
-  details#sendersBox summary .muted{color:var(--muted);}
-  textarea#senders{
-    width:100%;
-    padding:10px 12px;
-    border:none;
-    border-top:1px dashed var(--line);
-    background:var(--paper);
-    font-family:inherit;
-    font-size:0.85rem;
+  .senders-details summary:hover{color:var(--primary-hover);}
+  .senders-details summary::-webkit-details-marker{display:none;}
+  .senders-details summary::before{
+    content:'›';
+    font-weight:700;
+    transition:transform 0.2s;
+  }
+  .senders-details[open] summary::before{transform:rotate(90deg);}
+  .senders-details textarea{margin-top:6px;}
+
+  /* Checkbox */
+  .checkfield{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:12px;
+    padding:10px 14px;
+    background:var(--surface-alt);
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition:var(--transition);
+  }
+  .checkfield:hover{border-color:var(--primary);background:var(--primary-light);}
+  .checkfield input[type=checkbox]{
+    width:18px;height:18px;
+    accent-color:var(--primary);
+    cursor:pointer;
+  }
+  .checkfield label{
+    font-size:0.82rem;
+    font-weight:500;
     color:var(--ink);
-    resize:vertical;
-    line-height:1.4;
+    cursor:pointer;
   }
-  textarea#senders:focus{outline:2px solid var(--moss);outline-offset:1px;}
-  .checkfield{display:flex;align-items:center;gap:8px;margin-top:10px;}
-  .checkfield input[type=checkbox]{width:16px;height:16px;accent-color:var(--moss);flex-shrink:0;}
-  .checkfield label{margin:0;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--ink);}
+  .hint{
+    font-size:0.7rem;
+    color:var(--ink-muted);
+    margin-top:6px;
+    padding-left:28px;
+  }
+
+  /* Status */
+  .status{
+    font-size:0.78rem;
+    color:var(--ink-secondary);
+    margin-top:10px;
+    min-height:1.2em;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .status.err{color:var(--danger);}
+
+  /* Results */
+  .results-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .count-badge{
+    font-size:0.72rem;
+    font-weight:600;
+    color:var(--primary);
+    background:var(--primary-light);
+    padding:4px 10px;
+    border-radius:20px;
+  }
+  ul.results{list-style:none;padding:0;}
+  ul.results li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:14px 0;
+    border-bottom:1px solid var(--border);
+    transition:var(--transition);
+  }
+  ul.results li:last-child{border-bottom:none;}
+  ul.results li:hover{background:var(--surface-alt);margin:0 -12px;padding:14px 12px;border-radius:var(--radius-sm);}
+  ul.results input[type=checkbox]{
+    width:18px;height:18px;
+    accent-color:var(--primary);
+    margin-top:2px;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .meta{flex:1;min-width:0;cursor:pointer;}
+  .meta:active{opacity:0.7;}
+  .meta .subj{
+    font-size:0.85rem;
+    font-weight:500;
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .meta .sub{
+    font-size:0.72rem;
+    color:var(--ink-muted);
+    margin-top:3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .empty{
+    color:var(--ink-muted);
+    font-size:0.85rem;
+    text-align:center;
+    padding:32px 0;
+  }
+
+  /* Actions bar */
+  .actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+
+  /* Readonly mode */
   #othersPanel.readonly .actions{display:none;}
   #othersPanel.readonly ul.results input[type=checkbox]{display:none;}
-  .hint{font-size:0.7rem;color:var(--muted);margin-top:4px;}
+
+  /* Spinner */
+  .spin{
+    display:inline-block;
+    width:14px;height:14px;
+    border:2px solid var(--border);
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:sp 0.7s linear infinite;
+    flex-shrink:0;
+  }
+  @keyframes sp{to{transform:rotate(360deg);}}
+
+  /* Setup note */
+  .setupnote{
+    font-size:0.8rem;
+    color:var(--accent);
+    background:var(--accent-light);
+    border:1px solid var(--accent);
+    border-radius:var(--radius-sm);
+    padding:12px 16px;
+    margin-bottom:16px;
+    display:none;
+  }
+
+  /* Account switch */
+  .account-row{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+    align-items:center;
+  }
+  .account-row select{flex:1;}
+
+  /* Divider */
+  .divider{
+    border:none;
+    border-top:1px solid var(--border);
+    margin:16px 0;
+  }
+
+  /* Responsive */
+  @media(max-width:480px){
+    .wrap{padding:16px 12px 32px;}
+    header h1{font-size:1.4rem;}
+    .card{padding:16px;}
+    .row{gap:6px;}
+    button{padding:9px 14px;font-size:0.78rem;}
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--ink-muted);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Limpieza de correo</h1>
-    <span class="tag">Gmail</span>
+    <span class="tag">✉ Gmail</span>
   </header>
 
   <div class="setupnote" id="setupNote">
-    Falta configurar CLIENT_ID en el &lt;script&gt; (línea con <code>const CLIENT_ID</code>). Lee las instrucciones que te di aparte.
+    ⚠️ Falta configurar CLIENT_ID en el &lt;script&gt; (línea con <code>const CLIENT_ID</code>).
   </div>
 
-  <div class="panel">
+  <!-- Auth -->
+  <div class="card">
+    <div class="card-title">Conexión</div>
     <div class="authbar">
-      <span class="who disconnected" id="whoami">Conectar</span>
-      <button id="authBtn">Conectar con Google</button>
+      <span class="who disconnected" id="whoami">Sin conexión</span>
+      <button id="authBtn" class="btn-primary">Conectar con Google</button>
     </div>
-    <div class="inline-row" id="accountSwitchRow" style="display:none;">
+    <div class="account-row" id="accountSwitchRow" style="display:none;">
       <select id="accountsSelect"></select>
-      <button type="button" id="removeAccountBtn" class="secondary">Quitar</button>
+      <button type="button" id="removeAccountBtn" class="btn-secondary btn-sm">✕ Quitar</button>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="field">
-      <label for="senderInput">Remitentes a buscar</label>
-      <div class="inline-row">
-        <input type="text" id="senderInput" placeholder="ej: temu.com">
-        <button type="button" id="addSenderBtn" class="secondary">Añadir</button>
-      </div>
-      <details id="sendersBox" style="margin-top:8px;">
-        <summary id="sendersSummary">0 remitentes guardados <span class="muted">· ver / editar</span></summary>
-        <textarea id="senders" rows="3">temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com</textarea>
-      </details>
+  <!-- Search -->
+  <div class="card">
+    <div class="card-title">Buscar spam</div>
+    <div class="row">
+      <input type="text" id="senderInput" placeholder="ej: temu.com" style="flex:1;">
+      <button type="button" id="addSenderBtn" class="btn-secondary btn-sm">+ Añadir</button>
     </div>
+    <details class="senders-details" id="sendersBox">
+      <summary id="sendersSummary">0 remitentes</summary>
+      <textarea id="senders" rows="3">temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com</textarea>
+    </details>
 
-    <div class="inline-row">
-      <label for="afterDate" class="icon-label" title="Borrar a partir de esta fecha">📆</label>
+    <div class="row" style="margin-top:14px;">
+      <span class="row-label" title="Desde fecha">📅</span>
       <input type="date" id="afterDate">
-      <button id="searchBtn" disabled>Buscar</button>
+      <button id="searchBtn" class="btn-primary" disabled>Buscar</button>
     </div>
     <div class="status" id="searchStatus"></div>
+  </div>
 
-    <hr class="divider">
-
-    <div class="inline-row">
-      <label for="othersAfterDate" class="icon-label" title="Fecha desde">📆</label>
+  <!-- Others -->
+  <div class="card">
+    <div class="card-title">Correos correctos</div>
+    <div class="row">
+      <span class="row-label" title="Desde fecha">📅</span>
       <input type="date" id="othersAfterDate">
-      <button class="secondary" id="othersBtn" disabled>Ver correos correctos</button>
+      <button class="btn-secondary" id="othersBtn" disabled>Ver bandeja limpia</button>
     </div>
-    <div class="checkfield">
+    <div class="checkfield" onclick="document.getElementById('allowDeleteOthers').click()">
       <input type="checkbox" id="allowDeleteOthers">
       <label for="allowDeleteOthers">Permitir borrar estos correos</label>
     </div>
-    <div class="hint">Si no lo marcas, esta lista es solo de consulta (sin casillas ni botón de borrar).</div>
+    <div class="hint">Si no lo marcas, la lista es solo de consulta.</div>
     <div class="status" id="othersStatus"></div>
   </div>
 
-  <div class="panel" id="resultsPanel" style="display:none;">
-    <div class="count" id="resultCount"></div>
-    <hr class="divider">
+  <!-- Results: spam -->
+  <div class="card" id="resultsPanel" style="display:none;">
+    <div class="results-header">
+      <span class="count-badge" id="resultCount"></span>
+      <button class="btn-secondary btn-sm" id="closeResultsBtn" type="button">✕ Cerrar</button>
+    </div>
     <ul class="results" id="resultsList"></ul>
     <div class="actions">
-      <button class="secondary" id="selectAllBtn">Marcar todos</button>
-      <button class="danger" id="deleteBtn">Borrar seleccionados</button>
+      <button class="btn-secondary" id="selectAllBtn">☑ Marcar todos</button>
+      <button class="btn-danger" id="deleteBtn">🗑 Borrar seleccionados</button>
     </div>
     <div class="status" id="deleteStatus"></div>
   </div>
 
-  <div class="panel" id="othersPanel" style="display:none;">
-    <div class="count" id="othersCount"></div>
-    <hr class="divider">
+  <!-- Results: others -->
+  <div class="card" id="othersPanel" style="display:none;">
+    <div class="results-header">
+      <span class="count-badge" id="othersCount"></span>
+      <button class="btn-secondary btn-sm" id="closeOthersBtn" type="button">✕ Cerrar</button>
+    </div>
     <ul class="results" id="othersList"></ul>
     <div class="actions">
-      <button class="secondary" id="othersSelectAllBtn">Marcar todos</button>
-      <button class="danger" id="othersDeleteBtn">Borrar seleccionados</button>
+      <button class="btn-secondary" id="othersSelectAllBtn">☑ Marcar todos</button>
+      <button class="btn-danger" id="othersDeleteBtn">🗑 Borrar seleccionados</button>
     </div>
     <div class="status" id="othersDeleteStatus"></div>
   </div>
@@ -291,7 +504,7 @@ const CLIENT_ID = "268339815090-cevhlvjeujirbo0pccvi4qp2b0e8du6p.apps.googleuser
 
 const SCOPES = "https://www.googleapis.com/auth/gmail.modify";
 let tokenClient = null;
-let accounts = []; // { token, email }
+let accounts = [];
 let currentThreads = [];
 let currentOtherThreads = [];
 
@@ -334,15 +547,13 @@ window.addEventListener('load', () => {
     scope: SCOPES,
     callback: async (resp) => {
       if(resp.error){
-        whoami.textContent = 'Conectar';
+        whoami.textContent = 'Sin conexión';
         whoami.classList.remove('connected');
         whoami.classList.add('disconnected');
         return;
       }
       let email = `cuenta-${accounts.length + 1}`;
       try{
-        // Usamos el propio perfil de Gmail para saber el email de la cuenta;
-        // esto ya está cubierto por el scope gmail.modify, sin pedir permisos nuevos.
         const profile = await gmailFetch(resp.access_token, '/profile');
         if(profile && profile.emailAddress) email = profile.emailAddress;
       }catch(e){
@@ -354,7 +565,7 @@ window.addEventListener('load', () => {
       }else{
         accounts.push({ token: resp.access_token, email });
       }
-      whoami.textContent = 'Conectado';
+      whoami.textContent = '✓ Conectado';
       whoami.classList.remove('disconnected');
       whoami.classList.add('connected');
       authBtn.textContent = 'Reconectar';
@@ -384,7 +595,7 @@ function renderAccounts(){
   });
   accountSwitchRow.style.display = accounts.length >= 1 ? 'flex' : 'none';
   if(!accounts.length){
-    whoami.textContent = 'Conectar';
+    whoami.textContent = 'Sin conexión';
     whoami.classList.remove('connected');
     whoami.classList.add('disconnected');
   }
@@ -399,7 +610,7 @@ function getSenderList(){
 
 function updateSendersSummary(){
   const n = getSenderList().length;
-  sendersSummary.innerHTML = `${n} remitente(s) guardado(s) <span class="muted">· ver / editar</span>`;
+  sendersSummary.textContent = `${n} remitente${n!==1?'s':''} activo${n!==1?'s':''}`;
 }
 
 function addSenderFromInput(){
@@ -463,7 +674,7 @@ async function gmailFetch(token, path, opts = {}){
     }
   });
   if(res.status === 401){
-    throw new Error('Token caducado en alguna cuenta. Pulsa "Añadir cuenta" para reconectarla.');
+    throw new Error('Token caducado. Reconecta la cuenta.');
   }
   if(!res.ok){
     const txt = await res.text().catch(()=> '');
@@ -483,7 +694,6 @@ async function searchAcrossAccounts(query, statusEl){
   for(const acc of accounts){
     const list = await gmailFetch(acc.token, `/threads?q=${encodeURIComponent(query)}&maxResults=50`);
     const ids = (list.threads || []).map(t => t.id);
-
     const batchSize = 8;
     for(let i = 0; i < ids.length; i += batchSize){
       const slice = ids.slice(i, i + batchSize);
@@ -492,7 +702,7 @@ async function searchAcrossAccounts(query, statusEl){
       ));
       results.forEach(r => { r.accountEmail = acc.email; r.accountToken = acc.token; });
       allThreads.push(...results);
-      statusEl.innerHTML = `<span class="spin"></span>${acc.email}: ${allThreads.length} cargados…`;
+      statusEl.innerHTML = `<span class="spin"></span> ${acc.email}: ${allThreads.length} cargados…`;
     }
   }
   return allThreads;
@@ -501,30 +711,29 @@ async function searchAcrossAccounts(query, statusEl){
 async function doSearch(){
   const query = buildQuery();
   if(!getSenderList().length){
-    searchStatus.textContent = 'Añade al menos un remitente.';
+    searchStatus.textContent = '⚠ Añade al menos un remitente.';
     searchStatus.classList.add('err');
     return;
   }
   if(!accounts.length){
-    searchStatus.textContent = 'Conecta al menos una cuenta.';
+    searchStatus.textContent = '⚠ Conecta al menos una cuenta.';
     searchStatus.classList.add('err');
     return;
   }
   searchStatus.classList.remove('err');
-  searchStatus.innerHTML = '<span class="spin"></span>Buscando…';
+  searchStatus.innerHTML = '<span class="spin"></span> Buscando…';
   searchBtn.disabled = true;
   resultsPanel.style.display = 'none';
-
   try{
     const threads = await searchAcrossAccounts(query, searchStatus);
     currentThreads = threads;
     renderResults(threads);
     searchStatus.textContent = threads.length
-      ? `${threads.length} correo(s) encontrado(s) en ${accounts.length} cuenta(s).`
+      ? `✓ ${threads.length} correo(s) en ${accounts.length} cuenta(s).`
       : 'Sin resultados.';
   }catch(err){
     console.error(err);
-    searchStatus.textContent = err.message || 'Error al buscar. Inténtalo de nuevo.';
+    searchStatus.textContent = err.message || 'Error al buscar.';
     searchStatus.classList.add('err');
   }finally{
     searchBtn.disabled = false;
@@ -536,7 +745,7 @@ function renderResults(threads){
   if(!threads.length){
     resultsPanel.style.display = 'block';
     resultCount.textContent = '0 resultados';
-    resultsList.innerHTML = '<div class="empty">No se encontraron correos con esos criterios.</div>';
+    resultsList.innerHTML = '<div class="empty">No se encontraron correos.</div>';
     return;
   }
   resultCount.textContent = `${threads.length} resultado(s)`;
@@ -550,7 +759,7 @@ function renderResults(threads){
     const li = document.createElement('li');
     li.innerHTML = `
       <input type="checkbox" checked data-idx="${i}">
-      <div class="meta">
+      <div class="meta" data-thread-id="${t.id}" data-account="${(t.accountEmail||'').replace(/"/g,'&quot;')}" title="Doble toque para abrir en Gmail">
         <div class="subj">${subject.replace(/</g,'&lt;')}</div>
         <div class="sub">${from.replace(/</g,'&lt;')} · ${dateStr} · ${(t.accountEmail||'').replace(/</g,'&lt;')}</div>
       </div>
@@ -558,6 +767,7 @@ function renderResults(threads){
     resultsList.appendChild(li);
   });
   resultsPanel.style.display = 'block';
+  attachOpenOnDoubleTap(resultsList);
 }
 
 function renderOthers(threads){
@@ -565,22 +775,22 @@ function renderOthers(threads){
   if(!threads.length){
     othersPanel.style.display = 'block';
     othersCount.textContent = '0 resultados';
-    othersList.innerHTML = '<div class="empty">No hay correos en la bandeja que no coincidan.</div>';
+    othersList.innerHTML = '<div class="empty">Bandeja limpia.</div>';
     updateOthersReadonly();
     return;
   }
-  othersCount.textContent = `${threads.length} correo(s) que NO se van a borrar`;
+  othersCount.textContent = `${threads.length} correo(s) conservados`;
   threads.forEach((t, i) => {
     const msg = (t.messages && t.messages[0]) || {};
     const headers = msg.payload ? msg.payload.headers : [];
     const subject = header(headers, 'Subject') || '(sin asunto)';
-    const from = header(headers, 'From') || '(remitente desconocido)';
+    const from = header(headers, 'From') || '(desconocido)';
     const dateRaw = header(headers, 'Date');
     const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('es-ES') : '';
     const li = document.createElement('li');
     li.innerHTML = `
       <input type="checkbox" data-idx="${i}">
-      <div class="meta">
+      <div class="meta" data-thread-id="${t.id}" data-account="${(t.accountEmail||'').replace(/"/g,'&quot;')}" title="Doble toque para abrir en Gmail">
         <div class="subj">${subject.replace(/</g,'&lt;')}</div>
         <div class="sub">${from.replace(/</g,'&lt;')} · ${dateStr} · ${(t.accountEmail||'').replace(/</g,'&lt;')}</div>
       </div>
@@ -589,6 +799,26 @@ function renderOthers(threads){
   });
   othersPanel.style.display = 'block';
   updateOthersReadonly();
+  attachOpenOnDoubleTap(othersList);
+}
+
+let lastTapInfo = { el: null, time: 0 };
+function attachOpenOnDoubleTap(container){
+  container.querySelectorAll('.meta[data-thread-id]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const now = Date.now();
+      const isDouble = lastTapInfo.el === el && (now - lastTapInfo.time) < 450;
+      lastTapInfo = { el, time: now };
+      if(isDouble){
+        e.preventDefault();
+        const threadId = el.dataset.threadId;
+        const account = el.dataset.account || '';
+        const url = `https://mail.google.com/mail/?authuser=${encodeURIComponent(account)}#all/${threadId}`;
+        window.open(url, '_blank');
+        lastTapInfo = { el: null, time: 0 };
+      }
+    });
+  });
 }
 
 function updateOthersReadonly(){
@@ -599,25 +829,24 @@ allowDeleteOthers.addEventListener('change', updateOthersReadonly);
 async function doOthersSearch(){
   const query = buildExcludeQuery();
   if(!accounts.length){
-    othersStatus.textContent = 'Conecta al menos una cuenta.';
+    othersStatus.textContent = '⚠ Conecta al menos una cuenta.';
     othersStatus.classList.add('err');
     return;
   }
   othersStatus.classList.remove('err');
-  othersStatus.innerHTML = '<span class="spin"></span>Buscando…';
+  othersStatus.innerHTML = '<span class="spin"></span> Buscando…';
   othersBtn.disabled = true;
   othersPanel.style.display = 'none';
-
   try{
     const threads = await searchAcrossAccounts(query, othersStatus);
     renderOthers(threads);
     currentOtherThreads = threads;
     othersStatus.textContent = threads.length
-      ? `${threads.length} correo(s) que se conservan en ${accounts.length} cuenta(s).`
+      ? `✓ ${threads.length} correo(s) en ${accounts.length} cuenta(s).`
       : 'Sin resultados.';
   }catch(err){
     console.error(err);
-    othersStatus.textContent = err.message || 'Error al buscar. Inténtalo de nuevo.';
+    othersStatus.textContent = err.message || 'Error al buscar.';
     othersStatus.classList.add('err');
   }finally{
     othersBtn.disabled = false;
@@ -631,29 +860,27 @@ async function trashThread(token, threadId){
 async function doDelete(){
   const checked = Array.from(resultsList.querySelectorAll('input[type=checkbox]:checked'));
   if(!checked.length){
-    deleteStatus.textContent = 'No hay correos seleccionados.';
+    deleteStatus.textContent = '⚠ No hay correos seleccionados.';
     deleteStatus.classList.add('err');
     return;
   }
   deleteStatus.classList.remove('err');
   deleteBtn.disabled = true;
   let done = 0;
-  deleteStatus.innerHTML = `<span class="spin"></span>Borrando 0/${checked.length}…`;
-
+  deleteStatus.innerHTML = `<span class="spin"></span> Borrando 0/${checked.length}…`;
   for(const cb of checked){
     const idx = parseInt(cb.dataset.idx, 10);
     const thread = currentThreads[idx];
     try{
       await trashThread(thread.accountToken, thread.id);
       done++;
-      deleteStatus.innerHTML = `<span class="spin"></span>Borrando ${done}/${checked.length}…`;
-      cb.closest('li').style.opacity = '0.4';
+      deleteStatus.innerHTML = `<span class="spin"></span> Borrando ${done}/${checked.length}…`;
+      cb.closest('li').style.opacity = '0.35';
     }catch(err){
       console.error('Error borrando', thread.id, err);
     }
   }
-
-  deleteStatus.textContent = `${done} de ${checked.length} correo(s) borrado(s).`;
+  deleteStatus.textContent = `✓ ${done} de ${checked.length} borrado(s).`;
   deleteBtn.disabled = false;
   setTimeout(() => doSearch(), 900);
 }
@@ -662,29 +889,27 @@ async function doDeleteOthers(){
   if(!allowDeleteOthers.checked) return;
   const checked = Array.from(othersList.querySelectorAll('input[type=checkbox]:checked'));
   if(!checked.length){
-    othersDeleteStatus.textContent = 'No hay correos seleccionados.';
+    othersDeleteStatus.textContent = '⚠ No hay correos seleccionados.';
     othersDeleteStatus.classList.add('err');
     return;
   }
   othersDeleteStatus.classList.remove('err');
   othersDeleteBtn.disabled = true;
   let done = 0;
-  othersDeleteStatus.innerHTML = `<span class="spin"></span>Borrando 0/${checked.length}…`;
-
+  othersDeleteStatus.innerHTML = `<span class="spin"></span> Borrando 0/${checked.length}…`;
   for(const cb of checked){
     const idx = parseInt(cb.dataset.idx, 10);
     const thread = currentOtherThreads[idx];
     try{
       await trashThread(thread.accountToken, thread.id);
       done++;
-      othersDeleteStatus.innerHTML = `<span class="spin"></span>Borrando ${done}/${checked.length}…`;
-      cb.closest('li').style.opacity = '0.4';
+      othersDeleteStatus.innerHTML = `<span class="spin"></span> Borrando ${done}/${checked.length}…`;
+      cb.closest('li').style.opacity = '0.35';
     }catch(err){
       console.error('Error borrando', thread.id, err);
     }
   }
-
-  othersDeleteStatus.textContent = `${done} de ${checked.length} correo(s) borrado(s).`;
+  othersDeleteStatus.textContent = `✓ ${done} de ${checked.length} borrado(s).`;
   othersDeleteBtn.disabled = false;
   setTimeout(() => doOthersSearch(), 900);
 }
@@ -703,6 +928,12 @@ othersSelectAllBtn.addEventListener('click', () => {
   boxes.forEach(b => b.checked = !allChecked);
 });
 othersDeleteBtn.addEventListener('click', doDeleteOthers);
+document.getElementById('closeResultsBtn').addEventListener('click', () => {
+  resultsPanel.style.display = 'none';
+});
+document.getElementById('closeOthersBtn').addEventListener('click', () => {
+  othersPanel.style.display = 'none';
+});
 
 renderAccounts();
 updateOthersReadonly();
