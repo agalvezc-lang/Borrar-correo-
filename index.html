@@ -117,6 +117,9 @@
   @keyframes sp{to{transform:rotate(360deg);}}
   .authbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .authbar .who{font-size:0.75rem;color:var(--muted);}
+  .who.connected{font-size:1.15rem;font-weight:700;color:var(--moss);letter-spacing:0.02em;}
+  .who.disconnected{font-size:1.15rem;font-weight:700;color:var(--danger);letter-spacing:0.02em;animation:blink 1s step-start infinite;}
+  @keyframes blink{50%{opacity:0.25;}}
   .setupnote{
     font-size:0.75rem;
     color:var(--rust);
@@ -140,7 +143,7 @@
 
   <div class="panel">
     <div class="authbar">
-      <span class="who" id="whoami">No conectado.</span>
+      <span class="who disconnected" id="whoami">Conectar</span>
       <button id="authBtn">Conectar con Google</button>
     </div>
   </div>
@@ -172,6 +175,19 @@
     </div>
     <div class="status" id="deleteStatus"></div>
   </div>
+
+  <div class="panel">
+    <div class="actions" style="margin-top:0;">
+      <button class="secondary" id="othersBtn" disabled>Ver correos correctos (que no se van a borrar)</button>
+    </div>
+    <div class="status" id="othersStatus"></div>
+  </div>
+
+  <div class="panel" id="othersPanel" style="display:none;">
+    <div class="count" id="othersCount"></div>
+    <hr class="divider">
+    <ul class="results" id="othersList"></ul>
+  </div>
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -196,6 +212,11 @@ const resultCount = document.getElementById('resultCount');
 const selectAllBtn = document.getElementById('selectAllBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const deleteStatus = document.getElementById('deleteStatus');
+const othersBtn = document.getElementById('othersBtn');
+const othersStatus = document.getElementById('othersStatus');
+const othersPanel = document.getElementById('othersPanel');
+const othersList = document.getElementById('othersList');
+const othersCount = document.getElementById('othersCount');
 
 if(CLIENT_ID.includes("TU_CLIENT_ID")){
   setupNote.style.display = 'block';
@@ -209,12 +230,18 @@ window.addEventListener('load', () => {
     scope: SCOPES,
     callback: (resp) => {
       if(resp.error){
-        whoami.textContent = 'Error de autenticación: ' + resp.error;
+        whoami.textContent = 'Conectar';
+        whoami.title = 'Error de autenticación: ' + resp.error;
+        whoami.classList.remove('connected');
+        whoami.classList.add('disconnected');
         return;
       }
       accessToken = resp.access_token;
-      whoami.textContent = 'Conectado a Gmail.';
+      whoami.textContent = 'Conectado';
+      whoami.classList.remove('disconnected');
+      whoami.classList.add('connected');
       searchBtn.disabled = false;
+      othersBtn.disabled = false;
       authBtn.textContent = 'Reconectar';
     }
   });
@@ -243,6 +270,16 @@ function buildQuery(){
   if(afterRaw){
     const gd = toGmailDate(afterRaw);
     if(gd) q += (q ? ' ' : '') + `after:${gd}`;
+  }
+  return q;
+}
+
+function buildExcludeQuery(){
+  const sendersRaw = document.getElementById('senders').value.trim();
+  const senders = sendersRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  let q = 'in:inbox';
+  if(senders.length){
+    q += ' -{' + senders.map(s=>`from:${s}`).join(' OR ') + '}';
   }
   return q;
 }
@@ -342,6 +379,69 @@ function renderResults(threads){
   resultsPanel.style.display = 'block';
 }
 
+function renderOthers(threads){
+  othersList.innerHTML = '';
+  if(!threads.length){
+    othersPanel.style.display = 'block';
+    othersCount.textContent = '0 resultados';
+    othersList.innerHTML = '<div class="empty">No hay correos en la bandeja que no coincidan.</div>';
+    return;
+  }
+  othersCount.textContent = `${threads.length} correo(s) que NO se van a borrar`;
+  threads.forEach(t => {
+    const msg = (t.messages && t.messages[0]) || {};
+    const headers = msg.payload ? msg.payload.headers : [];
+    const subject = header(headers, 'Subject') || '(sin asunto)';
+    const from = header(headers, 'From') || '';
+    const dateRaw = header(headers, 'Date');
+    const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('es-ES') : '';
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="meta">
+        <div class="subj">${subject.replace(/</g,'&lt;')}</div>
+        <div class="sub">${from.replace(/</g,'&lt;')} · ${dateStr}</div>
+      </div>
+    `;
+    othersList.appendChild(li);
+  });
+  othersPanel.style.display = 'block';
+}
+
+async function doOthersSearch(){
+  const query = buildExcludeQuery();
+  othersStatus.classList.remove('err');
+  othersStatus.innerHTML = '<span class="spin"></span>Buscando…';
+  othersBtn.disabled = true;
+  othersPanel.style.display = 'none';
+
+  try{
+    const list = await gmailFetch(`/threads?q=${encodeURIComponent(query)}&maxResults=50`);
+    const ids = (list.threads || []).map(t => t.id);
+
+    const threads = [];
+    const batchSize = 8;
+    for(let i = 0; i < ids.length; i += batchSize){
+      const slice = ids.slice(i, i + batchSize);
+      const results = await Promise.all(slice.map(id =>
+        gmailFetch(`/threads/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`)
+      ));
+      threads.push(...results);
+      othersStatus.innerHTML = `<span class="spin"></span>Cargando ${threads.length}/${ids.length}…`;
+    }
+
+    renderOthers(threads);
+    othersStatus.textContent = threads.length
+      ? `${threads.length} correo(s) que se conservan.`
+      : 'Sin resultados.';
+  }catch(err){
+    console.error(err);
+    othersStatus.textContent = err.message || 'Error al buscar. Inténtalo de nuevo.';
+    othersStatus.classList.add('err');
+  }finally{
+    othersBtn.disabled = false;
+  }
+}
+
 async function trashThread(threadId){
   await gmailFetch(`/threads/${threadId}/trash`, { method: 'POST' });
 }
@@ -383,6 +483,7 @@ selectAllBtn.addEventListener('click', () => {
   boxes.forEach(b => b.checked = !allChecked);
 });
 deleteBtn.addEventListener('click', doDelete);
+othersBtn.addEventListener('click', doOthersSearch);
 </script>
 </body>
 </html>
