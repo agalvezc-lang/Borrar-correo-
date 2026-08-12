@@ -78,7 +78,7 @@
   button.secondary:hover{background:var(--ink);color:var(--paper);}
   button.danger{background:var(--danger);border-color:var(--danger);}
   button.danger:hover{background:#7d221d;border-color:#7d221d;}
-  .actions{display:flex;gap:10px;margin-top:16px;}
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
   .status{
     font-size:0.8rem;
     color:var(--muted);
@@ -115,6 +115,16 @@
     vertical-align:middle;margin-right:6px;
   }
   @keyframes sp{to{transform:rotate(360deg);}}
+  .authbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .authbar .who{font-size:0.75rem;color:var(--muted);}
+  .setupnote{
+    font-size:0.75rem;
+    color:var(--rust);
+    border:1px dashed var(--rust);
+    padding:10px 12px;
+    margin-bottom:18px;
+    display:none;
+  }
 </style>
 </head>
 <body>
@@ -124,6 +134,17 @@
     <span class="tag">Gmail</span>
   </header>
 
+  <div class="setupnote" id="setupNote">
+    Falta configurar CLIENT_ID en el &lt;script&gt; (línea con <code>const CLIENT_ID</code>). Lee las instrucciones que te di aparte.
+  </div>
+
+  <div class="panel">
+    <div class="authbar">
+      <span class="who" id="whoami">No conectado.</span>
+      <button id="authBtn">Conectar con Google</button>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="field">
       <label for="senders">Remitentes a buscar</label>
@@ -131,12 +152,12 @@
     </div>
     <div class="row">
       <div class="field">
-        <label for="afterDate">Borrar a partir de (dd/mm/aaaa)</label>
-        <input type="text" id="afterDate" placeholder="ej. 01/07/2026">
+        <label for="afterDate">Borrar a partir de</label>
+        <input type="date" id="afterDate">
       </div>
     </div>
     <div class="actions">
-      <button id="searchBtn">Buscar</button>
+      <button id="searchBtn" disabled>Buscar</button>
     </div>
     <div class="status" id="searchStatus"></div>
   </div>
@@ -153,10 +174,20 @@
   </div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-const MODEL = "claude-sonnet-4-6";
-const GMAIL_MCP = { type: "url", url: "https://gmailmcp.googleapis.com/mcp/v1", name: "gmail-mcp" };
+/* === CONFIGURA ESTO === */
+const CLIENT_ID = "268339815090-cevhlvjeujirbo0pccvi4qp2b0e8du6p.apps.googleusercontent.com";
+/* ====================== */
 
+const SCOPES = "https://www.googleapis.com/auth/gmail.modify";
+let accessToken = null;
+let tokenClient = null;
+let currentThreads = [];
+
+const authBtn = document.getElementById('authBtn');
+const whoami = document.getElementById('whoami');
+const setupNote = document.getElementById('setupNote');
 const searchBtn = document.getElementById('searchBtn');
 const searchStatus = document.getElementById('searchStatus');
 const resultsPanel = document.getElementById('resultsPanel');
@@ -166,14 +197,39 @@ const selectAllBtn = document.getElementById('selectAllBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const deleteStatus = document.getElementById('deleteStatus');
 
-let currentThreads = [];
+if(CLIENT_ID.includes("TU_CLIENT_ID")){
+  setupNote.style.display = 'block';
+  authBtn.disabled = true;
+}
+
+window.addEventListener('load', () => {
+  if(CLIENT_ID.includes("TU_CLIENT_ID")) return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if(resp.error){
+        whoami.textContent = 'Error de autenticación: ' + resp.error;
+        return;
+      }
+      accessToken = resp.access_token;
+      whoami.textContent = 'Conectado a Gmail.';
+      searchBtn.disabled = false;
+      authBtn.textContent = 'Reconectar';
+    }
+  });
+});
+
+authBtn.addEventListener('click', () => {
+  if(!tokenClient) return;
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+});
 
 function toGmailDate(str){
-  // dd/mm/aaaa -> yyyy/mm/dd
-  const m = str.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const m = str.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if(!m) return null;
-  const [, d, mo, y] = m;
-  return `${y}/${mo.padStart(2,'0')}/${d.padStart(2,'0')}`;
+  const [, y, mo, d] = m;
+  return `${y}/${mo}/${d}`;
 }
 
 function buildQuery(){
@@ -191,40 +247,28 @@ function buildQuery(){
   return q;
 }
 
-async function callClaude(userText, system){
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 1000,
-      system: system || undefined,
-      messages: [{ role: "user", content: userText }],
-      mcp_servers: [GMAIL_MCP]
-    })
+async function gmailFetch(path, opts = {}){
+  const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me${path}`, {
+    ...opts,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(opts.headers || {})
+    }
   });
-  if(!res.ok){
-    throw new Error(`API error ${res.status}`);
+  if(res.status === 401){
+    throw new Error('Token caducado. Pulsa "Reconectar".');
   }
+  if(!res.ok){
+    const txt = await res.text().catch(()=> '');
+    throw new Error(`Error API Gmail (${res.status}): ${txt}`);
+  }
+  if(res.status === 204) return null;
   return res.json();
 }
 
-function extractToolResults(data){
-  if(!data || !data.content) return [];
-  return data.content.filter(b => b.type === "mcp_tool_result");
-}
-
-function parseThreadsFromResults(blocks){
-  let threads = [];
-  for(const b of blocks){
-    const text = b?.content?.[0]?.text;
-    if(!text) continue;
-    try{
-      const parsed = JSON.parse(text);
-      if(Array.isArray(parsed.threads)) threads = threads.concat(parsed.threads);
-    }catch(e){ /* not JSON, skip */ }
-  }
-  return threads;
+function header(headers, name){
+  const h = (headers||[]).find(h => h.name.toLowerCase() === name.toLowerCase());
+  return h ? h.value : '';
 }
 
 async function doSearch(){
@@ -240,10 +284,21 @@ async function doSearch(){
   resultsPanel.style.display = 'none';
 
   try{
-    const prompt = `Usa la herramienta Gmail search_threads con el parámetro query="${query.replace(/"/g,'\\"')}" y pageSize=50. Después de obtener el resultado, responde solo con la palabra OK.`;
-    const data = await callClaude(prompt);
-    const blocks = extractToolResults(data);
-    const threads = parseThreadsFromResults(blocks);
+    const list = await gmailFetch(`/threads?q=${encodeURIComponent(query)}&maxResults=50`);
+    const ids = (list.threads || []).map(t => t.id);
+
+    // Trae metadata (asunto/remitente/fecha) de cada hilo, en tandas para no saturar
+    const threads = [];
+    const batchSize = 8;
+    for(let i = 0; i < ids.length; i += batchSize){
+      const slice = ids.slice(i, i + batchSize);
+      const results = await Promise.all(slice.map(id =>
+        gmailFetch(`/threads/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`)
+      ));
+      threads.push(...results);
+      searchStatus.innerHTML = `<span class="spin"></span>Cargando ${threads.length}/${ids.length}…`;
+    }
+
     currentThreads = threads;
     renderResults(threads);
     searchStatus.textContent = threads.length
@@ -251,7 +306,7 @@ async function doSearch(){
       : 'Sin resultados.';
   }catch(err){
     console.error(err);
-    searchStatus.textContent = 'Error al buscar. Inténtalo de nuevo.';
+    searchStatus.textContent = err.message || 'Error al buscar. Inténtalo de nuevo.';
     searchStatus.classList.add('err');
   }finally{
     searchBtn.disabled = false;
@@ -269,12 +324,17 @@ function renderResults(threads){
   resultCount.textContent = `${threads.length} resultado(s)`;
   threads.forEach((t, i) => {
     const msg = (t.messages && t.messages[0]) || {};
+    const headers = msg.payload ? msg.payload.headers : [];
+    const subject = header(headers, 'Subject') || '(sin asunto)';
+    const from = header(headers, 'From') || '';
+    const dateRaw = header(headers, 'Date');
+    const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('es-ES') : '';
     const li = document.createElement('li');
     li.innerHTML = `
       <input type="checkbox" checked data-idx="${i}">
       <div class="meta">
-        <div class="subj">${(msg.subject || '(sin asunto)').replace(/</g,'&lt;')}</div>
-        <div class="sub">${(msg.sender||'').replace(/</g,'&lt;')} · ${msg.date ? new Date(msg.date).toLocaleDateString('es-ES') : ''}</div>
+        <div class="subj">${subject.replace(/</g,'&lt;')}</div>
+        <div class="sub">${from.replace(/</g,'&lt;')} · ${dateStr}</div>
       </div>
     `;
     resultsList.appendChild(li);
@@ -283,8 +343,7 @@ function renderResults(threads){
 }
 
 async function trashThread(threadId){
-  const prompt = `Usa la herramienta Gmail trash_thread con threadId="${threadId}". Después responde solo con la palabra OK.`;
-  await callClaude(prompt);
+  await gmailFetch(`/threads/${threadId}/trash`, { method: 'POST' });
 }
 
 async function doDelete(){
