@@ -37,44 +37,46 @@
     line-height:1.4;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:580px;margin:0 auto;padding:12px 14px 24px;}
+  .wrap{max-width:440px;margin:0 auto;padding:6px 8px 12px;}
 
-  header{text-align:center;margin-bottom:12px;padding:6px 0;}
+  header{text-align:center;margin-bottom:6px;padding:2px 0;}
   header h1{
-    font-size:1.2rem;font-weight:700;letter-spacing:-0.02em;
+    font-size:1rem;font-weight:700;letter-spacing:-0.02em;
     background:linear-gradient(135deg,var(--ink),var(--pri));
     -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   }
   header .tag{
-    display:inline-block;font-size:0.6rem;font-weight:600;color:var(--pri);
-    background:var(--pri-l);padding:2px 8px;border-radius:12px;
-    text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;
+    display:inline-block;font-size:0.55rem;font-weight:600;color:var(--pri);
+    background:var(--pri-l);padding:1px 6px;border-radius:10px;
+    text-transform:uppercase;letter-spacing:0.08em;margin-top:1px;
   }
 
   .card{
     background:var(--surface);border:1px solid var(--border);
-    border-radius:var(--r);padding:12px 14px;margin-bottom:10px;
+    border-radius:var(--r);padding:8px 10px;margin-bottom:6px;
     box-shadow:var(--sh-s);transition:var(--tr);
   }
   .card:hover{box-shadow:var(--sh-m);}
   .card-title{
-    font-size:0.6rem;font-weight:600;text-transform:uppercase;
-    letter-spacing:0.1em;color:var(--ink-mut);margin-bottom:8px;
+    font-size:0.58rem;font-weight:600;text-transform:uppercase;
+    letter-spacing:0.1em;color:var(--ink-mut);margin-bottom:5px;
     display:flex;align-items:center;gap:5px;
   }
   .card-title::before{content:'';width:3px;height:10px;background:var(--pri);border-radius:2px;}
 
-  .authbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-  .who{font-size:1.1rem;font-weight:700;}
-  .who.connected{color:var(--succ);}
-  .who.disconnected{color:var(--ink-mut);animation:pulse 2s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+  .authbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .authbar .who-wrap{flex:1;display:flex;}
+  .authbar .auth-wrap{flex:1;display:flex;justify-content:flex-end;}
+  .who{font-size:1rem;font-weight:800;}
+  .who.connected{color:#00c853;}
+  .who.disconnected{color:#ff1744;animation:pulse 1.1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
 
   button{
-    font-family:inherit;font-size:0.75rem;font-weight:600;
-    padding:7px 14px;border:none;border-radius:var(--r-s);
+    font-family:inherit;font-size:0.72rem;font-weight:600;
+    padding:5px 10px;border:none;border-radius:var(--r-s);
     cursor:pointer;transition:var(--tr);display:inline-flex;
-    align-items:center;gap:5px;flex-shrink:0;
+    align-items:center;gap:4px;flex-shrink:0;
   }
   button:active{transform:scale(0.97);}
   button:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
@@ -84,67 +86,69 @@
   .btn-s:hover:not(:disabled){background:var(--border);}
   .btn-d{background:var(--dang);color:#fff;}
   .btn-d:hover:not(:disabled){background:var(--dang-h);}
-  .btn-sm{padding:5px 10px;font-size:0.68rem;}
+  .btn-sm{padding:4px 8px;font-size:0.65rem;}
 
   input[type=text],input[type=date],select,textarea{
-    font-family:inherit;font-size:0.8rem;color:var(--ink);
+    font-family:inherit;font-size:0.78rem;color:var(--ink);
     background:var(--surface-alt);border:1.5px solid var(--border);
-    border-radius:var(--r-s);padding:7px 10px;transition:var(--tr);width:100%;
+    border-radius:var(--r-s);padding:5px 8px;transition:var(--tr);width:100%;
   }
   input:focus,select:focus,textarea:focus{
     outline:none;border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-g);background:var(--surface);
   }
   input::placeholder{color:var(--ink-mut);}
-  input[type=date]{width:auto;padding:6px 10px;}
+  input[type=date]{width:auto;max-width:118px;padding:4px 5px;font-size:0.72rem;}
   select{cursor:pointer;}
-  textarea{resize:vertical;line-height:1.5;font-family:'JetBrains Mono',monospace;font-size:0.72rem;}
+  textarea{resize:vertical;line-height:1.4;font-family:'JetBrains Mono',monospace;font-size:0.7rem;}
 
-  .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .row+.row{margin-top:6px;}
-  .row-label{font-size:0.85rem;flex-shrink:0;}
+  .row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .row+.row{margin-top:4px;}
+  .row-label{font-size:0.8rem;flex-shrink:0;}
 
-  .senders-details{width:100%;margin-top:5px;}
+  .senders-details{width:100%;margin-top:3px;}
   .senders-details summary{
-    font-size:0.68rem;font-weight:500;color:var(--pri);
-    cursor:pointer;list-style:none;padding:3px 0;
+    font-size:0.65rem;font-weight:500;color:var(--pri);
+    cursor:pointer;list-style:none;padding:2px 0;
     display:flex;align-items:center;gap:3px;
   }
   .senders-details summary::-webkit-details-marker{display:none;}
   .senders-details summary::before{content:'›';font-weight:700;transition:transform 0.15s;}
   .senders-details[open] summary::before{transform:rotate(90deg);}
-  .senders-details textarea{margin-top:4px;}
+  .senders-details textarea{margin-top:3px;}
 
   .checkfield{
-    display:flex;align-items:center;gap:8px;margin-top:8px;
-    padding:7px 10px;background:var(--surface-alt);
+    display:flex;align-items:center;gap:6px;margin-top:5px;
+    padding:5px 8px;background:var(--surface-alt);
     border-radius:var(--r-s);border:1px solid var(--border);
     cursor:pointer;transition:var(--tr);
   }
   .checkfield:hover{border-color:var(--pri);background:var(--pri-l);}
-  .checkfield input[type=checkbox]{width:16px;height:16px;accent-color:var(--pri);cursor:pointer;}
-  .checkfield label{font-size:0.78rem;font-weight:500;cursor:pointer;}
-  .hint{font-size:0.65rem;color:var(--ink-mut);margin-top:4px;padding-left:24px;}
+  .checkfield input[type=checkbox]{width:15px;height:15px;accent-color:var(--pri);cursor:pointer;}
+  .checkfield label{font-size:0.75rem;font-weight:500;cursor:pointer;}
+  .checkfield-inline{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.7rem;font-weight:500;white-space:nowrap;flex-shrink:0;}
+  .checkfield-inline input[type=checkbox]{width:15px;height:15px;accent-color:var(--pri);cursor:pointer;}
+  .hint{font-size:0.62rem;color:var(--ink-mut);margin-top:2px;}
 
-  .status{font-size:0.72rem;color:var(--ink-sec);margin-top:6px;min-height:1.1em;display:flex;align-items:center;gap:5px;}
+  .status{font-size:0.7rem;color:var(--ink-sec);margin-top:4px;min-height:1em;display:flex;align-items:center;gap:5px;}
   .status.err{color:var(--dang);}
 
-  .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-  .count-badge{font-size:0.65rem;font-weight:600;color:var(--pri);background:var(--pri-l);padding:3px 8px;border-radius:12px;}
+  .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .count-badge{font-size:0.62rem;font-weight:600;color:var(--pri);background:var(--pri-l);padding:2px 7px;border-radius:12px;}
   ul.results{list-style:none;padding:0;}
   ul.results li{
-    display:flex;gap:10px;align-items:flex-start;
-    padding:8px 0;border-bottom:1px solid var(--border);transition:var(--tr);
+    display:flex;gap:8px;align-items:flex-start;
+    padding:5px 0;border-bottom:1px solid var(--border);transition:var(--tr);
   }
   ul.results li:last-child{border-bottom:none;}
-  ul.results li:hover{background:var(--surface-alt);margin:0 -8px;padding:8px;border-radius:var(--r-s);}
-  ul.results input[type=checkbox]{width:16px;height:16px;accent-color:var(--pri);margin-top:1px;flex-shrink:0;cursor:pointer;}
+  ul.results li:hover{background:var(--surface-alt);margin:0 -6px;padding:5px 6px;border-radius:var(--r-s);}
+  ul.results input[type=checkbox]{width:15px;height:15px;accent-color:var(--pri);margin-top:1px;flex-shrink:0;cursor:pointer;}
   .meta{flex:1;min-width:0;cursor:pointer;}
   .meta:active{opacity:0.7;}
-  .meta .subj{font-size:0.8rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .meta .sub{font-size:0.68rem;color:var(--ink-mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .empty{color:var(--ink-mut);font-size:0.8rem;text-align:center;padding:20px 0;}
+  .meta .subj{font-size:0.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .meta .sub{font-size:0.65rem;color:var(--ink-mut);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .empty{color:var(--ink-mut);font-size:0.78rem;text-align:center;padding:12px 0;}
 
-  .actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;}
+  .actions{display:flex;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);flex-wrap:wrap;}
 
   #othersPanel.readonly .actions{display:none;}
   #othersPanel.readonly ul.results input[type=checkbox]{display:none;}
@@ -157,21 +161,21 @@
   @keyframes sp{to{transform:rotate(360deg);}}
 
   .setupnote{
-    font-size:0.75rem;color:#b45309;background:#fef3c7;
+    font-size:0.72rem;color:#b45309;background:#fef3c7;
     border:1px solid #f59e0b;border-radius:var(--r-s);
-    padding:8px 12px;margin-bottom:10px;display:none;
+    padding:6px 9px;margin-bottom:6px;display:none;
   }
 
-  .account-row{display:flex;gap:6px;margin-top:8px;align-items:center;}
+  .account-row{display:flex;gap:5px;margin-top:5px;align-items:center;}
   .account-row select{flex:1;}
 
-  .divider{border:none;border-top:1px solid var(--border);margin:10px 0;}
+  .divider{border:none;border-top:1px solid var(--border);margin:6px 0;}
 
   @media(max-width:480px){
-    .wrap{padding:10px 10px 20px;}
-    header h1{font-size:1.05rem;}
-    .card{padding:10px 12px;}
-    button{padding:6px 12px;font-size:0.72rem;}
+    .wrap{padding:5px 6px 10px;}
+    header h1{font-size:0.95rem;}
+    .card{padding:7px 8px;}
+    button{padding:5px 9px;font-size:0.7rem;}
   }
 </style>
 </head>
@@ -187,43 +191,41 @@
   <div class="card">
     <div class="card-title">Conexión</div>
     <div class="authbar">
-      <span class="who disconnected" id="whoami">Sin conexión</span>
-      <button id="authBtn" class="btn-p">Conectar con Google</button>
+      <span class="who-wrap"><span class="who disconnected" id="whoami">Sin conexión</span></span>
+      <button type="button" id="emptyTrashBtn" class="btn-d btn-sm" disabled>🗑️ Vaciar papelera</button>
+      <span class="auth-wrap"><button id="authBtn" class="btn-p">Conectar con Google</button></span>
     </div>
     <div class="account-row" id="accountSwitchRow" style="display:none;">
       <select id="accountsSelect"></select>
       <button type="button" id="removeAccountBtn" class="btn-s btn-sm">✕</button>
     </div>
+    <div class="status" id="emptyTrashStatus"></div>
   </div>
 
   <div class="card">
     <div class="card-title">Buscar spam</div>
     <div class="row">
-      <input type="text" id="senderInput" placeholder="ej: temu.com" style="flex:1;">
-      <button type="button" id="addSenderBtn" class="btn-s btn-sm">+ Añadir</button>
+      <input type="text" id="senderInput" placeholder="ej: temu.com" style="flex:1;min-width:0;">
+      <button type="button" id="addSenderBtn" class="btn-s btn-sm">+</button>
+      <input type="date" id="afterDate">
+      <button id="searchBtn" class="btn-p btn-sm" disabled>Buscar</button>
     </div>
     <details class="senders-details" id="sendersBox">
       <summary id="sendersSummary">0 remitentes</summary>
       <textarea id="senders" rows="2">temu.com, orders.temu.com, eu.temuemail.com, support.temu.com, aliexpress.com, mondoffice.com, kalamazoo.es, sygic.com</textarea>
     </details>
-    <div class="row" style="margin-top:8px;">
-      <span class="row-label">📅</span>
-      <input type="date" id="afterDate">
-      <button id="searchBtn" class="btn-p" disabled>Buscar</button>
-    </div>
     <div class="status" id="searchStatus"></div>
   </div>
 
   <div class="card">
     <div class="card-title">Correos correctos</div>
     <div class="row">
-      <span class="row-label">📅</span>
       <input type="date" id="othersAfterDate">
-      <button class="btn-s" id="othersBtn" disabled>Ver bandeja</button>
-    </div>
-    <div class="checkfield">
-      <input type="checkbox" id="allowDeleteOthers">
-      <label for="allowDeleteOthers">Permitir borrar estos correos</label>
+      <button class="btn-s btn-sm" id="othersBtn" disabled>Ver bandeja</button>
+      <label class="checkfield-inline" for="allowDeleteOthers">
+        <input type="checkbox" id="allowDeleteOthers">
+        <span>Permitir borrar</span>
+      </label>
     </div>
     <div class="hint">Sin marcar → solo consulta.</div>
     <div class="status" id="othersStatus"></div>
@@ -259,7 +261,7 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 const CLIENT_ID = "268339815090-cevhlvjeujirbo0pccvi4qp2b0e8du6p.apps.googleusercontent.com";
-const SCOPES = "https://www.googleapis.com/auth/gmail.modify";
+const SCOPES = "https://mail.google.com/";
 let tokenClient=null,accounts=[],currentThreads=[],currentOtherThreads=[];
 
 const $=id=>document.getElementById(id);
@@ -272,7 +274,7 @@ deleteBtn=$('deleteBtn'),deleteStatus=$('deleteStatus'),othersBtn=$('othersBtn')
 othersStatus=$('othersStatus'),othersPanel=$('othersPanel'),othersList=$('othersList'),
 othersCount=$('othersCount'),othersSelectAllBtn=$('othersSelectAllBtn'),
 othersDeleteBtn=$('othersDeleteBtn'),othersDeleteStatus=$('othersDeleteStatus'),
-allowDeleteOthers=$('allowDeleteOthers');
+allowDeleteOthers=$('allowDeleteOthers'),emptyTrashBtn=$('emptyTrashBtn'),emptyTrashStatus=$('emptyTrashStatus');
 
 if(CLIENT_ID.includes("TU_CLIENT_ID")){setupNote.style.display='block';authBtn.disabled=true;}
 
@@ -300,7 +302,7 @@ function renderAccounts(){
   accounts.forEach(a=>{const o=document.createElement('option');o.textContent=a.email;accountsSelect.appendChild(o);});
   accountSwitchRow.style.display=accounts.length?'flex':'none';
   if(!accounts.length){whoami.textContent='Sin conexión';whoami.className='who disconnected';}
-  searchBtn.disabled=!accounts.length;othersBtn.disabled=!accounts.length;
+  searchBtn.disabled=!accounts.length;othersBtn.disabled=!accounts.length;emptyTrashBtn.disabled=!accounts.length;
 }
 
 function getSenderList(){return $('senders').value.split(',').map(s=>s.trim()).filter(Boolean);}
@@ -453,6 +455,49 @@ async function doDeleteOthers(){
   othersDeleteStatus.textContent=`✓ ${done}/${cbs.length} borrados.`;othersDeleteBtn.disabled=false;
   setTimeout(doOthersSearch,800);
 }
+
+async function listTrashIds(token){
+  const ids=[];let pageToken;
+  do{
+    const p=new URLSearchParams({q:'in:trash',maxResults:'500'});
+    if(pageToken)p.set('pageToken',pageToken);
+    const r=await gmailFetch(token,`/messages?${p.toString()}`);
+    (r.messages||[]).forEach(m=>ids.push(m.id));
+    pageToken=r.nextPageToken;
+  }while(pageToken);
+  return ids;
+}
+
+async function batchDelete(token,ids){
+  for(let i=0;i<ids.length;i+=1000){
+    const chunk=ids.slice(i,i+1000);
+    await gmailFetch(token,'/messages/batchDelete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:chunk})});
+  }
+}
+
+async function emptyTrashAllAccounts(){
+  if(!accounts.length)return;
+  if(!confirm('Esto borrará PERMANENTEMENTE la papelera de todas las cuentas conectadas. ¿Continuar?'))return;
+  emptyTrashBtn.disabled=true;emptyTrashStatus.className='status';
+  let totalDone=0,totalFound=0;
+  for(const acc of accounts){
+    try{
+      emptyTrashStatus.innerHTML=`<span class="spin"></span>${acc.email}: buscando…`;
+      const ids=await listTrashIds(acc.token);
+      totalFound+=ids.length;
+      if(ids.length){
+        emptyTrashStatus.innerHTML=`<span class="spin"></span>${acc.email}: borrando ${ids.length}…`;
+        await batchDelete(acc.token,ids);
+        totalDone+=ids.length;
+      }
+    }catch(e){
+      emptyTrashStatus.textContent=`⚠ ${acc.email}: ${e.message}`;emptyTrashStatus.className='status err';
+    }
+  }
+  emptyTrashStatus.textContent=totalFound?`✓ ${totalDone}/${totalFound} borrados de ${accounts.length} cuenta(s).`:'Papelera ya vacía en todas las cuentas.';
+  emptyTrashBtn.disabled=false;
+}
+emptyTrashBtn.onclick=emptyTrashAllAccounts;
 
 searchBtn.onclick=doSearch;
 selectAllBtn.onclick=()=>{const b=resultsList.querySelectorAll('input[type=checkbox]');const all=Array.from(b).every(x=>x.checked);b.forEach(x=>x.checked=!all);};
